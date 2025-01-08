@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "355890748835",
+    "project_id": "been-ther",
+    "storage_bucket": "been-ther.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355890748835:android:e594d664368b118f530e16",
+        "android_client_info": {
+          "package_name": "com.exampe.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMMSaxycevbzB3vEDdHVQhafuia0u6uRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
