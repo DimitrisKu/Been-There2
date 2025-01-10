@@ -1,3 +1,17 @@
+buildscript {
+    repositories {
+        google() // Google's Maven repository
+        mavenCentral() // Central repository for dependencies
+    }
+    dependencies {
+        // Use Android Gradle Plugin compatible with Gradle 8.x
+        classpath 'com.android.tools.build:gradle:8.1.1'
+
+        // Firebase Gradle plugin for google-services.json
+        classpath 'com.google.gms:google-services:4.3.15'
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -5,6 +19,7 @@ allprojects {
     }
 }
 
+// Define common build directory structure
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
@@ -13,6 +28,7 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Clean task
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
