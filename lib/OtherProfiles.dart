@@ -66,13 +66,7 @@ class OtherProfile_Widget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        "25", // Αριθμός φίλων
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
+                      Number_Friends(username: username),
                       TextButton(
                         onPressed: () {
                           // Ενέργεια για το κουμπί "Friends"
@@ -111,6 +105,76 @@ class OtherProfile_Widget extends StatelessWidget {
       ),
       );
   }
+}
+
+
+class Number_Friends extends StatefulWidget {
+  final String username;
+
+  Number_Friends(
+    {required this.username}
+  );
+
+  @override
+  Number_Friends_State createState() => Number_Friends_State();
+}
+
+class Number_Friends_State extends State<Number_Friends> {
+  int no=-1;
+
+  @override
+  void initState() {
+    super.initState();
+    getFriendsCount();
+  }
+
+  Future<void> getFriendsCount() async {
+  try {
+    // Εύρεση του User document
+    final querySnap = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('UserName', isEqualTo: widget.username)
+        .get();
+
+    if (querySnap.docs.isNotEmpty) {
+      // Παίρνουμε το πρώτο User document
+      final userDoc = querySnap.docs.first.reference;
+
+      // Παίρνουμε όλα τα έγγραφα του subcollection "friends"
+      final friendsSnap = await userDoc.collection('friends').get();
+
+      // Επιστροφή του πλήθους των εγγράφων
+      setState(() {
+        no = friendsSnap.docs.length-1;
+      });
+      return;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not found'))
+        );
+      return; // Επιστροφή 0 αν δεν βρεθεί ο χρήστης
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error while fetching friends count'))
+        );
+    return; // Επιστροφή 0 σε περίπτωση σφάλματος
+  }
+
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+            no.toString(), // Αριθμός φίλων
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          );
+  }
+
 }
 
 
@@ -221,11 +285,13 @@ class Add_Friend_Button_State extends State<Add_Friend_Button> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('The friend request had been sent'))
+          SnackBar(content: Text('The friend request has been sent'))
           );
 
       } else {
-        print("Failed to send the friend request");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send the friend request'))
+          );
       }
 
       setState(() {
@@ -235,12 +301,125 @@ class Add_Friend_Button_State extends State<Add_Friend_Button> {
     }
     else if(state == 'Requested') {
 
+      final querySnap = await FirebaseFirestore.instance
+      .collection('Users')
+      .where('UserName', isEqualTo: widget.username)
+      .get();
+
+      if (querySnap.docs.isNotEmpty) {
+        // Παίρνουμε το πρώτο έγγραφο από το αποτέλεσμα
+        final userDoc = querySnap.docs.first.reference;
+
+        // Εκτελούμε query στο subcollection "friend requests"
+        final friendRequestSnap = await userDoc
+            .collection('friend requests')
+            .where('username', isEqualTo: widget.user)
+            .get();
+
+        if (friendRequestSnap.docs.isNotEmpty) {
+          // Διαγραφή των εγγράφων που βρέθηκαν
+          for (final doc in friendRequestSnap.docs) {
+            await doc.reference.delete();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You have deleted your friend request'))
+              );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No friend request found'))
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not found'))
+          );
+      }
+
+      setState(() {
+        state = 'None';
+      });
+
     }
     else if(state == 'Friends') {
 
+      final querySnap = await FirebaseFirestore.instance
+      .collection('Users')
+      .where('UserName', isEqualTo: widget.username)
+      .get();
+
+      if (querySnap.docs.isNotEmpty) {
+        // Παίρνουμε το πρώτο έγγραφο από το αποτέλεσμα
+        final userDoc = querySnap.docs.first.reference;
+
+        // Εκτελούμε query στο subcollection "friend requests"
+        final friendRequestSnap = await userDoc
+            .collection('friends')
+            .where('username', isEqualTo: widget.user)
+            .get();
+
+        if (friendRequestSnap.docs.isNotEmpty) {
+          // Διαγραφή των εγγράφων που βρέθηκαν
+          for (final doc in friendRequestSnap.docs) {
+            await doc.reference.delete();
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Friend not found in database'))
+          );
+          return;
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not found'))
+          );
+          return;
+      }
+
+      final querySnap2 = await FirebaseFirestore.instance
+      .collection('Users')
+      .where('UserName', isEqualTo: widget.user)
+      .get();
+
+      if (querySnap2.docs.isNotEmpty) {
+        // Παίρνουμε το πρώτο έγγραφο από το αποτέλεσμα
+        final userDoc = querySnap2.docs.first.reference;
+
+        // Εκτελούμε query στο subcollection "friend requests"
+        final friendRequestSnap = await userDoc
+            .collection('friends')
+            .where('username', isEqualTo: widget.username)
+            .get();
+
+        if (friendRequestSnap.docs.isNotEmpty) {
+          // Διαγραφή των εγγράφων που βρέθηκαν
+          for (final doc in friendRequestSnap.docs) {
+            await doc.reference.delete();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You have unfriended the user' + widget.username))
+              );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Friend not found in database'))
+          );
+          return;
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not found'))
+          );
+          return;
+      }
+
+      setState(() {
+        state = 'None';
+      });
+
     }
     else if(state == 'Received') {
-
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Go to your friend request list to answer the request!!'))
+          );
     }
 
     setState(() {
