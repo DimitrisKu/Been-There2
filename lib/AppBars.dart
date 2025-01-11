@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'Notifications.dart';
+import 'package:google_fonts/google_fonts.dart'; // Προσθήκη του Google Fonts
+import 'Feed.dart';
 
-// Σε αυτο το αρχειο εχουμε βαλει ολα τα AppBars της εφαρμογης. Εδω γινονται τα navigation για το save new post και για το notifications.
-
+// Στην παρακάτω συνάρτηση χρησιμοποιούμε τη γραμματοσειρά Abhaya Libre για τον τίτλο Been There
 AppBar mainAppBar(BuildContext context, String user) {
   return AppBar(
     backgroundColor: const Color(0xFF1A2642),
@@ -11,20 +11,17 @@ AppBar mainAppBar(BuildContext context, String user) {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(
-            Icons.mic,
-            color: Colors.white
-          ),
+          icon: const Icon(Icons.mic, color: Colors.white),
           onPressed: () {
             // Ενέργεια για το mic button
           },
         ),
-        const Expanded(
+        Expanded(
           child: Text(
             'Been There',
-            style: const TextStyle(
+            style: GoogleFonts.abhayaLibre(
+              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
               color: Colors.white,
-              fontFamily: 'Abhaya Libre ExtraBold',
               fontSize: 36.0,
             ),
             textAlign: TextAlign.center,
@@ -36,12 +33,10 @@ AppBar mainAppBar(BuildContext context, String user) {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => Notification_Widget(),
-                settings: RouteSettings(arguments: user)
-              )
-            );
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Notification_Widget(),
+              settings: RouteSettings(arguments: user),
+            ));
           },
         ),
       ],
@@ -49,63 +44,73 @@ AppBar mainAppBar(BuildContext context, String user) {
   );
 }
 
-
 AppBar backAppBar(BuildContext context, String user) {
   return AppBar(
-    iconTheme: const IconThemeData(
-      color: Colors.white,
-      size: 25
-    ),
+    iconTheme: const IconThemeData(color: Colors.white, size: 25),
     backgroundColor: const Color(0xFF1A2642),
-    title: const Text(
-            'Been There',
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'Abhaya Libre ExtraBold',
-              fontSize: 36.0,
-            ),
-            textAlign: TextAlign.center,
-          ),
+    title: Text(
+      'Been There',
+      style: GoogleFonts.abhayaLibre(
+        // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
+        color: Colors.white,
+        fontSize: 36.0,
+      ),
+      textAlign: TextAlign.center,
+    ),
     centerTitle: true,
   );
 }
 
-
 AppBar saveAppBar(BuildContext context, String user) {
   return AppBar(
     backgroundColor: const Color(0xFF1A2642),
-    title: const Row(
+    title: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Cancel',
-          style: const TextStyle(
-            color: Colors.white,
-            fontFamily: 'Roboto',
-            fontSize: 16.0, 
-          )          
+        TextButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Feed_Widget(),
+                settings: RouteSettings(arguments: user),
+              ),
+            );
+          },
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.abhayaLibre(
+              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
+              color: Colors.white,
+              fontSize: 16.0,
+            ),
+          ),
         ),
-        const Expanded(
+        Expanded(
           child: Text(
             'Been There',
-            style: const TextStyle(
+            style: GoogleFonts.abhayaLibre(
+              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
               color: Colors.white,
-              fontFamily: 'Abhaya Libre ExtraBold',
               fontSize: 36.0,
             ),
             textAlign: TextAlign.center,
           ),
         ),
-        const Text(
-          'Save',
-          style: const TextStyle(
-            color: Colors.white,
-            fontFamily: 'Roboto',
-            fontSize: 16.0, 
-          )          
+        TextButton(
+          onPressed: () {
+            // Ενέργεια για το "Save" (π.χ. αποθήκευση post)
+          },
+          child: Text(
+            'Save',
+            style: GoogleFonts.abhayaLibre(
+              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
+              color: Colors.white,
+              fontSize: 16.0,
+            ),
+          ),
         ),
       ],
     ),
   );
 }
-
