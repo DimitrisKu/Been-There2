@@ -24,11 +24,16 @@ AppBar backAppBarComments(BuildContext context) {
 
 class Comment_Widget extends StatefulWidget {
   final String username;
+  final String user;
   final String comment;
   final DateTime date;
+  final String PostID;
+  bool showDeleteIcon;
+  final String Document;
 
   Comment_Widget(
-    {required this.username, required this.comment, required this.date}
+    {required this.username, required this.user, required this.comment, required this.date, this.showDeleteIcon=false, 
+    required this.Document, required this.PostID}
   );
   
   @override
@@ -38,65 +43,119 @@ class Comment_Widget extends StatefulWidget {
 class Comment_Widget_State extends State<Comment_Widget> {
 
   @override
-Widget build(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Εικονίδιο λογαριασμού
-        IconButton(
-          icon: const Icon(
-            Icons.account_circle,
-            color: Colors.blueGrey,
-            size: 50,
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.user==widget.username) {
+      widget.showDeleteIcon = true;
+    }
+  }
+
+  Future<void> deleteComment() async {
+    try {
+      await FirebaseFirestore.instance
+        .collection('Posts') 
+        .doc(widget.PostID) 
+        .collection('comments')
+        .doc(widget.Document)
+        .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Your comment has been deleted'))
+      );
+
+      Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Comment_Section_Widget(user: widget.user, PostID: widget.PostID))
+      );
+    } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Σφάλμα κατά τη διαγραφή: $e')),
+    );
+  }
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Εικονίδιο λογαριασμού
+          IconButton(
+            icon: const Icon(
+              Icons.account_circle,
+              color: Colors.blueGrey,
+              size: 50,
+            ),
+            onPressed: () {
+              // Ενέργεια για το κουμπί
+            },
           ),
-          onPressed: () {
-            // Ενέργεια για το κουμπί
-          },
-        ),
-        const SizedBox(width: 8), // Διάστημα ανάμεσα στα στοιχεία
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Όνομα χρήστη
-              Text(
-                widget.username,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          const SizedBox(width: 8), // Διάστημα ανάμεσα στα στοιχεία
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Όνομα χρήστη
+                Text(
+                  widget.username,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4), // Διάστημα μεταξύ του ονόματος και του σχολίου
-              // Σχόλιο
+                const SizedBox(height: 4), // Διάστημα μεταξύ του ονόματος και του σχολίου
+                // Σχόλιο
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.comment,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    // Εμφάνιση του κάδου βάσει της συνθήκης
+                    if (widget.showDeleteIcon)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          deleteComment();
+                        },
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Ημερομηνία δημιουργίας του σχολίου
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
               Text(
-                widget.comment,
+                widget.date.toString().substring(0, 16), // Φόρματ της ημερομηνίας
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
+                  fontSize: 12,
+                  color: Colors.grey,
                 ),
               ),
             ],
           ),
-        ),
-        // Ημερομηνία δημιουργίας του σχολίου
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              widget.date.toString().substring(0, 16), // Φόρματ της ημερομηνίας
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
 }
 
@@ -165,9 +224,13 @@ Future<void> uploadComment(String com) async {
       'date': FieldValue.serverTimestamp(), // Χρόνος δημιουργίας
     });
 
-    print('Comment uploaded successfully!');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Your comment has been uploaded'))
+      );
   } catch (e) {
-    print('Failed to upload comment: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to upload comment: $e'))
+      );
     // Διαχείριση σφαλμάτων
   }
 
@@ -204,8 +267,11 @@ Future<void> uploadComment(String com) async {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         return Comment_Widget(
           username: data['username'],
+          user: widget.user,
           comment: data['comment'],
           date: data['date'].toDate(),
+          Document: doc.id,
+          PostID: widget.PostID,
         );
       }).toList();
     
