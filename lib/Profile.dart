@@ -1,11 +1,30 @@
 
 import 'package:flutter/material.dart';
-import 'AppBars.dart';
 import 'Menu.dart';
 import 'OtherProfiles.dart';
 import 'login_screen.dart';
 import 'Friends.dart';
 
+
+AppBar AppBarMyProfile(BuildContext context, String username) {
+  return AppBar(
+    iconTheme: const IconThemeData(
+      color: Colors.white,
+      size: 25
+    ),
+    backgroundColor: const Color(0xFF1A2642),
+    title: Text(
+            'Hello "$username", welcome to your profile!',
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'Abhaya Libre ExtraBold',
+              fontSize: 20.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+    centerTitle: true,
+  );
+}
 
 // Εδω εχουμε την οθονη του Profile
 class Profile_Widget extends StatelessWidget {
@@ -15,7 +34,7 @@ class Profile_Widget extends StatelessWidget {
     final String user = ModalRoute.of(context)!.settings.arguments as String;
 
     return Scaffold(
-        appBar: mainAppBar(context, user),
+        appBar: AppBarMyProfile(context, user),
         body: Column(
         children: [
           // My Profile Section
@@ -42,13 +61,7 @@ class Profile_Widget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        "25", // Αριθμός φίλων
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
+                      Number_Friends(username: user),
                       TextButton(
                         onPressed: () {
                           // Ενέργεια για το κουμπί "Friends"
