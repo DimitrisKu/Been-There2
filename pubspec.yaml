@@ -66,6 +66,9 @@ flutter:
   assets:
     - assets/images/circles.png
     - assets/images/logo.png
+    - assets/map_style.json
+    - assets/images/pin.png
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
