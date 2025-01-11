@@ -1,6 +1,8 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import'CommentSection.dart';
+import 'OtherProfiles.dart';
 
 
 
@@ -164,6 +166,69 @@ class Post_Widget extends StatefulWidget {
 
 class Post_Widget_State extends State<Post_Widget> {
 
+  bool isLiked = false; // Ελέγχει αν ο τρέχων χρήστης έχει κάνει like
+  int likeCount = 0; // Ο συνολικός αριθμός των likes
+  bool isProcessing = false; // Αποτρέπει πολλαπλά taps
+
+  @override
+  void initState() {
+    super.initState();
+    fetchLikeStatus();
+  }
+
+  // Φόρτωση κατάστασης like από τη βάση δεδομένων
+  Future<void> fetchLikeStatus() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Posts')
+        .doc(widget.PostID)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      final likes = List<String>.from(data['likes'] ?? []);
+      setState(() {
+        isLiked = likes.contains(widget.user);
+        likeCount = likes.length-1;
+      });
+    }
+  }
+
+  // Εναλλαγή κατάστασης like
+  Future<void> toggleLike() async {
+    if (isProcessing) return; // Αν είναι ήδη σε εξέλιξη, δεν κάνουμε τίποτα
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    final postRef =
+        FirebaseFirestore.instance.collection('Posts').doc(widget.PostID);
+
+    if (isLiked) {
+      // Αν ο χρήστης έχει κάνει like, αφαιρούμε το like
+      await postRef.update({
+        'likes': FieldValue.arrayRemove([widget.user]),
+      });
+      setState(() {
+        isLiked = false;
+        likeCount--;
+      });
+    } else {
+      // Αν ο χρήστης δεν έχει κάνει like, προσθέτουμε το like
+      await postRef.update({
+        'likes': FieldValue.arrayUnion([widget.user]),
+      });
+      setState(() {
+        isLiked = true;
+        likeCount++;
+      });
+    }
+
+    setState(() {
+      isProcessing = false; // Επιτρέπουμε ξανά τα taps
+    });
+  }
+
   OverlayEntry? _overlayEntry;
 
   void ShowFullDescription(BuildContext context) {
@@ -234,14 +299,39 @@ class Post_Widget_State extends State<Post_Widget> {
                         size: 50,
                       ),
                       onPressed: () {
-
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => OtherProfile_Widget(
+                              username: widget.username,
+                              user: widget.user,
+                            )
+                          )
+                        );
                       },
                     ),
                     Column(
                       children: [
-                        Text(widget.username),
-                        Text(widget.date.toString().substring(0, 16)),
-                        Text('tags')
+                        Text(
+                          widget.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          )
+                          ),
+                        Text(
+                          widget.date.toString().substring(0, 16),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          ),
+                        const Text(
+                          'tags',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          )
                       ],
                     ),
                     const Spacer(),
@@ -250,7 +340,13 @@ class Post_Widget_State extends State<Post_Widget> {
                       children: [
                         Padding(
                           padding: EdgeInsets.all(15.0),
-                          child: Text(widget.location),
+                          child: Text(
+                            widget.location,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              )
+                            ),
                         ),
                         StarRating(widget.rating),
                       ],
@@ -273,7 +369,12 @@ class Post_Widget_State extends State<Post_Widget> {
                     onPressed: () {
                       ShowFullDescription(context);
                     },
-                    child: Text(widget.description.substring(0, 35) + '...'),
+                    child: Text(
+                      widget.description.substring(0, 35) + '...',
+                      style: const TextStyle(
+                                color: Colors.black
+                              )
+                      ),
                   )
                 )
               ),
@@ -300,14 +401,17 @@ class Post_Widget_State extends State<Post_Widget> {
                 child: Row(           // Likes, comments,         no of photos
                   children: [
                     IconButton(
-                      icon: const Icon(
-                        Icons.favorite_border,
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.black,
                         size: 30,
                       ),
                       onPressed: () {
-
+                        toggleLike();
                       },
                     ),
+                    Text('$likeCount'),
+                    SizedBox(width: 10),
                     IconButton(
                       icon: const Icon(
                         Icons.messenger_outline_rounded,
