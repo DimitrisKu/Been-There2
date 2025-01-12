@@ -160,20 +160,15 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
                 onTap: () async {
                   Prediction? prediction = await PlacesAutocomplete.show(
                     context: context,
-                    apiKey: 'AIzaSyAR8yzUNnHgEEIRap8E7QdnkN49krtKHbg',
+                    apiKey: 'YOUR_GOOGLE_API_KEY',
                     mode: Mode.overlay, // Fullscreen overlay
                     language: 'en', // Language
                     components: [Component(Component.country, 'gr')], // Greece
-                    types: ['establishment'], // Focus on establishments like restaurants
-                    strictbounds: false,
-                    offset: 0,
-                    location: Location(lat: 37.9838, lng: 23.7275), // Athens coordinates
-                     radius: 10000, // 10km radius
                   );
 
                   if (prediction != null) {
                     PlacesDetailsResponse detail = await GoogleMapsPlaces(
-                      apiKey: 'AIzaSyAR8yzUNnHgEEIRap8E7QdnkN49krtKHbg',
+                      apiKey: 'YOUR_GOOGLE_API_KEY',
                     ).getDetailsByPlaceId(prediction.placeId!);
 
                     setState(() {
