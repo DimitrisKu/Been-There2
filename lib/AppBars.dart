@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'Notifications.dart';
 import 'package:google_fonts/google_fonts.dart'; // Προσθήκη του Google Fonts
 import 'Feed.dart';
+import 'NewPost.dart';
 
 // Στην παρακάτω συνάρτηση χρησιμοποιούμε τη γραμματοσειρά Abhaya Libre για τον τίτλο Been There
 AppBar mainAppBar(BuildContext context, String user) {
@@ -61,7 +62,7 @@ AppBar backAppBar(BuildContext context, String user) {
   );
 }
 
-AppBar saveAppBar(BuildContext context, String user) {
+AppBar saveAppBar(BuildContext context, String user, VoidCallback onPressed) {
   return AppBar(
     backgroundColor: const Color(0xFF1A2642),
     title: Row(
@@ -80,7 +81,6 @@ AppBar saveAppBar(BuildContext context, String user) {
           child: Text(
             'Cancel',
             style: GoogleFonts.abhayaLibre(
-              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
               color: Colors.white,
               fontSize: 16.0,
             ),
@@ -90,7 +90,6 @@ AppBar saveAppBar(BuildContext context, String user) {
           child: Text(
             'Been There',
             style: GoogleFonts.abhayaLibre(
-              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
               color: Colors.white,
               fontSize: 36.0,
             ),
@@ -98,13 +97,10 @@ AppBar saveAppBar(BuildContext context, String user) {
           ),
         ),
         TextButton(
-          onPressed: () {
-            // Ενέργεια για το "Save" (π.χ. αποθήκευση post)
-          },
+          onPressed: onPressed, // Use the callback passed from NewPost_Widget
           child: Text(
             'Save',
             style: GoogleFonts.abhayaLibre(
-              // Χρησιμοποιούμε την γραμματοσειρά Abhaya Libre
               color: Colors.white,
               fontSize: 16.0,
             ),
