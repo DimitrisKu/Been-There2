@@ -8,6 +8,8 @@ class NewPost_Widget extends StatefulWidget {
 }
 
 class _NewPost_WidgetState extends State<NewPost_Widget> {
+
+
   // Fields for location, description, rating, and tags
   String? _location; // Selected location name
   double? _latitude; // Latitude of the location
@@ -123,7 +125,7 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
         'description': _description,
         'rating': _rating,
         'tags': _tags,
-        'likes': [""],
+        'likes': [],
         'date': DateTime.now(),
       });
 
