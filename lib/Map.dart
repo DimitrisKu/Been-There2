@@ -4,6 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'AppBars.dart';
 import 'Menu.dart';
+import 'PostsAtLocationScreen.dart';
+
 
 class CoordinatesMap extends StatefulWidget {
   CoordinatesMap();
@@ -23,47 +25,72 @@ class _CoordinatesMapState extends State<CoordinatesMap> {
   );
 
   Future<void> loadCoordinates() async {
-    setState(() {
-      isLoading = true;
+  setState(() {
+    isLoading = true;
+  });
+
+  try {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Posts')
+        .get();
+
+    // Map to group posts by unique coordinates
+    Map<LatLng, List<DocumentSnapshot>> groupedPosts = {};
+
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+      if (data.containsKey('coordinates') && data['coordinates'] is GeoPoint) {
+        GeoPoint geoPoint = data['coordinates'];
+        LatLng latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+
+        // Group posts by their LatLng
+        if (!groupedPosts.containsKey(latLng)) {
+          groupedPosts[latLng] = [];
+        }
+        groupedPosts[latLng]!.add(doc);
+      }
+    }
+
+    // Create a marker for each unique coordinate
+    groupedPosts.forEach((latLng, posts) {
+      String location = posts.first['location'] ?? 'Unknown Location'; // Use the location field of the first post
+
+      _markers.add(
+        Marker(
+          markerId: MarkerId(latLng.toString()), // Use LatLng as a unique marker ID
+          position: latLng,
+          icon: BitmapDescriptor.defaultMarker, // Use the default Google Maps pin
+          infoWindow: InfoWindow(
+            title: location,
+            snippet: '${posts.length} post(s)', // Show the number of posts at this location
+            onTap: () {
+              // Navigate to a new screen with posts from this location
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PostsAtLocationScreen(posts: posts),
+                ),
+              );
+            },
+          ),
+        ),
+      );
     });
 
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Posts')
-          .get();
-
-      // Extract GeoPoints and add them as markers
-      for (var doc in querySnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-        if (data.containsKey('coordinates') && data['coordinates'] is GeoPoint) {
-          GeoPoint geoPoint = data['coordinates'];
-          String comment = data['comment'] ?? '';
-          String location = data['location'] ?? 'Unknown Location'; // Fetch the 'location' field with a fallback
-
-          _markers.add(
-            Marker(
-              markerId: MarkerId(doc.id),
-              position: LatLng(geoPoint.latitude, geoPoint.longitude),
-              infoWindow: InfoWindow(
-                title: location, // Display the 'location' field here
-                snippet: comment, // Optional snippet field
-              ),
-            ),
-          );
-        }
-      }
-
-      setState(() {
-        isLoading = false; // Update UI after loading
-      });
-    } catch (e) {
-      print('Failed to load markers: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      isLoading = false;
+    });
+  } catch (e) {
+    print('Failed to load markers: $e');
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
+
+
 
   @override
   void initState() {
