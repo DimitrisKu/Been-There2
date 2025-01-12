@@ -112,7 +112,7 @@ class _CoordinatesMapState extends State<CoordinatesMap> {
 
     return Scaffold(
       appBar: mainAppBar(context, user), // Custom AppBar
-      bottomNavigationBar: ProfileMenu(context, user), // Custom Bottom Navigation Bar
+      bottomNavigationBar: MapMenu(context, user), // Custom Bottom Navigation Bar
       body: Stack(
         children: [
           GoogleMap(

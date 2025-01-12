@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
 
 class NewPost_Widget extends StatefulWidget {
   @override
@@ -23,10 +21,15 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
   final TextEditingController _tagController = TextEditingController();
   final FocusNode _tagFocusNode = FocusNode();
 
+  // Places list
+  List<Map<String, dynamic>> _places = []; // List of fetched places
+  bool _isLoadingPlaces = true; // Loading state for places
+
   @override
   void initState() {
     super.initState();
     _fetchUsersFromFirestore(); // Fetch users for tagging
+    _fetchPlacesFromFirestore(); // Fetch places from Firestore
 
     // Show suggestions when the tag field is focused
     _tagFocusNode.addListener(() {
@@ -58,6 +61,36 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
       print('Error fetching users from Firestore: $e');
     }
   }
+
+  Future<void> _fetchPlacesFromFirestore() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('Places') // Ensure collection name matches
+        .get();
+
+    setState(() {
+      _places = snapshot.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            if (data.containsKey('Location') && data.containsKey('coordinates')) {
+              GeoPoint geoPoint = data['coordinates'];
+              return {
+                'location': data['Location'],
+                'latitude': geoPoint.latitude,
+                'longitude': geoPoint.longitude,
+              };
+            }
+            return null; // Skip invalid documents
+          })
+          .where((place) => place != null) // Remove null entries
+          .cast<Map<String, dynamic>>() // Cast to correct type
+          .toList();
+
+      _isLoadingPlaces = false;
+    });
+
+    print('Fetched places: $_places');
+  } 
+  
 
   // Filter users based on input
   void _filterUsers(String input) {
@@ -96,7 +129,6 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Post created successfully!')),
       );
-      Navigator.pop(context);
     } catch (e) {
       print('Failed to save post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,45 +187,32 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
               ),
               const SizedBox(height: 24),
 
-              // Location field
-              GestureDetector(
-                onTap: () async {
-                  Prediction? prediction = await PlacesAutocomplete.show(
-                    context: context,
-                    apiKey: 'YOUR_GOOGLE_API_KEY',
-                    mode: Mode.overlay, // Fullscreen overlay
-                    language: 'en', // Language
-                    components: [Component(Component.country, 'gr')], // Greece
-                  );
+              // Places dropdown or loading indicator
+              _isLoadingPlaces
+                  ? Center(child: CircularProgressIndicator())
+                  : DropdownButtonFormField<Map<String, dynamic>>(
+                      decoration: InputDecoration(
+                        labelText: 'Select a Place',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _places.map((place) {
+                        return DropdownMenuItem(
+                          value: place,
+                          child: Text(place['location']), // Display place name
+                        );
+                      }).toList(),
+                      onChanged: (selectedPlace) {
+                        setState(() {
+                          _location = selectedPlace!['location'];
+                          _latitude = selectedPlace['latitude'];
+                          _longitude = selectedPlace['longitude'];
+                        });
+                      },
+                    ),
 
-                  if (prediction != null) {
-                    PlacesDetailsResponse detail = await GoogleMapsPlaces(
-                      apiKey: 'YOUR_GOOGLE_API_KEY',
-                    ).getDetailsByPlaceId(prediction.placeId!);
-
-                    setState(() {
-                      _location = prediction.description;
-                      _latitude = detail.result.geometry!.location.lat;
-                      _longitude = detail.result.geometry!.location.lng;
-                    });
-                  }
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: Text(
-                    _location ?? 'Search places or businesses',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
 
-              // Description field
+              // Description input
               TextField(
                 onChanged: (value) => _description = value,
                 maxLines: 4,
