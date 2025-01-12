@@ -170,6 +170,7 @@ class Post_Widget_State extends State<Post_Widget> {
   int likeCount = 0; // Ο συνολικός αριθμός των likes
   bool isProcessing = false; // Αποτρέπει πολλαπλά taps
 
+
   @override
   void initState() {
     super.initState();
@@ -369,12 +370,14 @@ class Post_Widget_State extends State<Post_Widget> {
                     onPressed: () {
                       ShowFullDescription(context);
                     },
-                    child: Text(
-                      widget.description.substring(0, 35) + '...',
+                   child: Text(
+                      widget.description.length > 36 
+                          ? widget.description.substring(0, 35) + '...' 
+                          : widget.description,
                       style: const TextStyle(
-                                color: Colors.black
-                              )
+                        color: Colors.black,
                       ),
+                    ),
                   )
                 )
               ),
