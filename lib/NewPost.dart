@@ -123,7 +123,7 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
         'description': _description,
         'rating': _rating,
         'tags': _tags,
-        'likes': [],
+        'likes': [""],
         'date': DateTime.now(),
       });
 
