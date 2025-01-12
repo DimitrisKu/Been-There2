@@ -1,4 +1,3 @@
-
 import 'NewPost.dart';
 import 'Profile.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +32,7 @@ BottomAppBar FeedMenu(BuildContext context, String user) {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Map_Widget(),
+              MaterialPageRoute(builder: (context) => CoordinatesMap(),
               settings: RouteSettings(arguments: user),),
             );
           },
@@ -165,7 +164,7 @@ BottomAppBar NewPostMenu(BuildContext context, String user) {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Map_Widget(),
+              MaterialPageRoute(builder: (context) => CoordinatesMap(),
               settings: RouteSettings(arguments: user),),
             );
           },
@@ -229,7 +228,7 @@ BottomAppBar ProfileMenu(BuildContext context, String user) {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Map_Widget(),
+              MaterialPageRoute(builder: (context) => CoordinatesMap(),
               settings: RouteSettings(arguments: user),),
             );
           },
