@@ -129,6 +129,11 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Post created successfully!')),
       );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => NewPost_Widget(),
+        settings: RouteSettings(arguments: user),),
+      );
     } catch (e) {
       print('Failed to save post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -149,7 +154,11 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
           children: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Go back
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewPost_Widget(),
+                  settings: RouteSettings(arguments: user),),
+                ); // Go back
               },
               child: Text(
                 'Cancel',
@@ -308,6 +317,7 @@ class _NewPost_WidgetState extends State<NewPost_Widget> {
           ),
         ),
       ),
+      bottomNavigationBar: NewPostMenu(context, user),
     );
   }
 
